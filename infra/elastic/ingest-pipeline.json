@@ -1,0 +1,33 @@
+{
+  "description": "Normalise and enrich Singapore POI documents",
+  "processors": [
+    {
+      "lowercase": {
+        "field": "category",
+        "ignore_missing": true
+      }
+    },
+    {
+      "script": {
+        "description": "Build geo_point from lat/lng fields if location not set",
+        "lang": "painless",
+        "source": """
+          if (ctx.location == null && ctx.lat != null && ctx.lng != null) {
+            ctx.location = ['lat': ctx.lat, 'lon': ctx.lng];
+          }
+        """
+      }
+    },
+    {
+      "set": {
+        "field": "updated_at",
+        "value": "{{_ingest.timestamp}}"
+      }
+    }
+  ],
+  "on_failure": [
+    {
+      "set": { "field": "pipeline_error", "value": "{{_ingest.on_failure_message}}" }
+    }
+  ]
+}

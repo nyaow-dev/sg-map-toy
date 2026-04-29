@@ -1,0 +1,31 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch Chrome against localhost",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}/apps/extjs-app",
+      "sourceMapPathOverrides": {
+        "webpack:///./~/*": "${workspaceFolder}/apps/extjs-app/node_modules/*",
+        "webpack:///src/*": "${workspaceFolder}/apps/extjs-app/*"
+      },
+      "sourceMaps": true,
+      "skipFiles": ["<node_modules/**>", "**/ext-all.js"]
+    },
+    {
+      "name": "Launch Node API",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/apps/api/src/index.js",
+      "envFile": "${workspaceFolder}/apps/api/.env",
+      "runtimeArgs": ["--watch"],
+      "skipFiles": ["<node_modules/**>"]
+    },
+    {
+      "name": "Full Stack",
+      "configurations": ["Launch Chrome against localhost", "Launch Node API"]
+    }
+  ]
+}

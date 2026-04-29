@@ -1,0 +1,12 @@
+node_modules/
+.env
+.env.local
+*.env
+
+# ExtJS build output
+apps/extjs-app/build/
+apps/extjs-app/.sencha/
+apps/extjs-app/ext/           # SDK goes here but is NOT committed (licensed)
+
+# Docker volumes
+infra/elastic/data/

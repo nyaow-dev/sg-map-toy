@@ -1,0 +1,79 @@
+{
+    "name": "SGMapApp",
+    "namespace": "SGMapApp",
+    "version": "1.0.0.0",
+
+    "framework": "ext",
+    "toolkit": "classic",
+    "theme": "theme-triton",
+
+    "requires": [
+        "font-awesome"
+    ],
+
+    "js": [
+        {
+            "path": "https://cdn.jsdelivr.net/npm/ol@9.2.4/dist/ol.js",
+            "remote": true
+        }
+    ],
+
+    "css": [
+        {
+            "path": "https://cdn.jsdelivr.net/npm/ol@9.2.4/ol.css",
+            "bootstrap": true,
+            "remote": true
+        }
+    ],
+
+    "classpath": [
+        "app",
+        "${toolkit.name}/src"
+    ],
+
+    "overrides": "${toolkit.name}/overrides",
+
+    "sass": {
+        "namespace": "SGMapApp",
+        "etc": [
+            "${toolkit.name}/sass/etc/all.scss"
+        ],
+        "var": [
+            "${toolkit.name}/sass/var/all.scss"
+        ],
+        "src": [
+            "${toolkit.name}/sass/src/all.scss"
+        ]
+    },
+
+    "resources": [
+        {
+            "path": "resources",
+            "output": "shared"
+        }
+    ],
+
+    "output": {
+        "base": "${workspace.dir}/build/${build.environment}/${app.name}",
+        "page": "index.html",
+        "manifest": "${build.id}.json",
+        "js": "${build.id}/app.js",
+        "resources": {
+            "path": "${build.id}/resources",
+            "shared": "resources"
+        }
+    },
+
+    "builds": {
+        "classic": {
+            "toolkit": "classic",
+            "theme":   "theme-triton"
+        }
+    },
+
+    "development": {
+        "server": {
+            "port": 1841
+        }
+    }
+}

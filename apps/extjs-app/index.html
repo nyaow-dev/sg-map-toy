@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=10, user-scalable=yes"
+    />
+    <title>SG Map — Bedok POIs</title>
+
+    <!-- ExtJS 6.2.0 classic - local from node_modules -->
+    <link
+      rel="stylesheet"
+      href="node_modules/extjs-gpl/build/classic/theme-triton/resources/theme-triton-all.css"
+    />
+
+    <!-- OpenLayers -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/ol@9.2.4/ol.css"
+    />
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+      }
+      .x-viewport {
+        height: 100% !important;
+        width: 100% !important;
+      }
+
+      /* Force OL canvas to fill its container and sit on top */
+      .ol-viewport,
+      .ol-viewport canvas {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        z-index: 1 !important;
+      }
+
+      /* ExtJS panel body needs to be a positioning context */
+      .x-panel-body {
+        position: relative !important;
+      }
+    </style>
+
+    <script src="node_modules/extjs-gpl/build/ext-all.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ol@9.2.4/dist/ol.js"></script>
+
+    <script>
+      Ext.onReady(function () {
+        Ext.Loader.setConfig({
+          enabled: true,
+          paths: { SGMapApp: "app" },
+        });
+
+        Ext.application({
+          name: "SGMapApp",
+          extend: "SGMapApp.Application",
+          requires: ["SGMapApp.view.main.Main"],
+          mainView: "SGMapApp.view.main.Main",
+        });
+      });
+    </script>
+  </head>
+  <body></body>
+</html>

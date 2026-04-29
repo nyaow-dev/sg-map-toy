@@ -1,0 +1,29 @@
+{
+  "index_patterns": ["sg-pois-*"],
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0,
+      "default_pipeline": "sg-poi-pipeline"
+    },
+    "mappings": {
+      "dynamic": "strict",
+      "properties": {
+        "id":          { "type": "keyword" },
+        "name": {
+          "type": "text",
+          "analyzer": "standard",
+          "fields": { "keyword": { "type": "keyword" } }
+        },
+        "category":    { "type": "keyword" },
+        "description": { "type": "text" },
+        "address":     { "type": "text", "fields": { "keyword": { "type": "keyword" } } },
+        "location":    { "type": "geo_point" },
+        "lat":         { "type": "float" },
+        "lng":         { "type": "float" },
+        "created_at":  { "type": "date" },
+        "updated_at":  { "type": "date" }
+      }
+    }
+  }
+}
