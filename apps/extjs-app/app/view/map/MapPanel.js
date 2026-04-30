@@ -147,6 +147,8 @@ Ext.define("SGMapApp.view.map.MapPanel", {
       me.getEl().dom.offsetWidth,
       me.getEl().dom.offsetHeight,
     );
+
+    me.fireEvent("mapready", me);
   },
 
   // ── Public API ────────────────────────────────────────────────
@@ -157,6 +159,11 @@ Ext.define("SGMapApp.view.map.MapPanel", {
    */
   loadMarkers: function (pois) {
     var me = this;
+
+    if (!me.markerSource) {
+      return;
+    }
+
     me.markerSource.clear();
 
     pois.forEach(function (poi) {
@@ -169,6 +176,12 @@ Ext.define("SGMapApp.view.map.MapPanel", {
 
       feature.setStyle(me.buildMarkerStyle(poi));
       me.markerSource.addFeature(feature);
+
+      console.log(
+        `Map loadMarker[${poi.id}]: (${poi.name}),`,
+        poi.lat,
+        poi.lng,
+      );
     });
   },
 

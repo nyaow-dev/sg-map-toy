@@ -17,6 +17,13 @@ Ext.define("SGMapApp.view.main.MainController", {
   init: function () {
     var me = this;
 
+    // Listen for map ready before loading markers
+    me.control({
+      mappanel: {
+        mapready: me.onMapReady,
+      },
+    });
+
     // Listen for store load to sync map
     var store = me.getViewModel().getStore("pois");
     store.on("load", me.onStoreLoad, me);
@@ -33,6 +40,9 @@ Ext.define("SGMapApp.view.main.MainController", {
 
     // Guard: map may not be rendered yet if store loads before afterRender
     if (!mapPanel || !mapPanel.olMap) return;
+
+    // Don't clear markers if load failed (no records returned)
+    if (!records || records.length === 0) return;
 
     var pois = (records || []).map(function (r) {
       return r.getData();
@@ -169,5 +179,31 @@ Ext.define("SGMapApp.view.main.MainController", {
 
   reloadStore: function () {
     this.getViewModel().getStore("pois").reload();
+  },
+
+  // ── Hardcoded Bedok POIs — replaced with live data in Tier 2 ──
+
+  onMapReady: function (mapPanel) {
+    // Hardcoded Bedok POIs — replaced with live data in Tier 2
+    var testPois = [
+      {
+        id: "1",
+        name: "Bedok Interchange Hawker Centre",
+        category: "hawker",
+        lng: 103.9296,
+        lat: 1.324,
+      },
+      {
+        id: "2",
+        name: "Bedok Reservoir Park",
+        category: "park",
+        lng: 103.928,
+        lat: 1.3374,
+      },
+      { id: "3", name: "Bedok MRT", category: "mrt", lng: 103.93, lat: 1.3241 },
+    ];
+
+    console.log(`MainController onMapReady`);
+    mapPanel.loadMarkers(testPois);
   },
 });
