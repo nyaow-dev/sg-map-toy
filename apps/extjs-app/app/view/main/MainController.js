@@ -185,25 +185,25 @@ Ext.define("SGMapApp.view.main.MainController", {
 
   onMapReady: function (mapPanel) {
     // Hardcoded Bedok POIs — replaced with live data in Tier 2
-    var testPois = [
-      {
-        id: "1",
-        name: "Bedok Interchange Hawker Centre",
-        category: "hawker",
-        lng: 103.9296,
-        lat: 1.324,
-      },
-      {
-        id: "2",
-        name: "Bedok Reservoir Park",
-        category: "park",
-        lng: 103.928,
-        lat: 1.3374,
-      },
-      { id: "3", name: "Bedok MRT", category: "mrt", lng: 103.93, lat: 1.3241 },
-    ];
+    // var testPois = [
+    //   {
+    //     id: "1",
+    //     name: "Bedok Interchange Hawker Centre",
+    //     category: "hawker",
+    //     lng: 103.9296,
+    //     lat: 1.324,
+    //   },
+    //   {
+    //     id: "2",
+    //     name: "Bedok Reservoir Park",
+    //     category: "park",
+    //     lng: 103.928,
+    //     lat: 1.3374,
+    //   },
+    //   { id: "3", name: "Bedok MRT", category: "mrt", lng: 103.93, lat: 1.3241 },
+    // ];
 
-    console.log(`MainController onMapReady`);
-    mapPanel.loadMarkers(testPois);
+    // console.log(`MainController onMapReady`);
+    // mapPanel.loadMarkers(testPois);
   },
 });
