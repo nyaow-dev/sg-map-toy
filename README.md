@@ -57,7 +57,7 @@ npx serve .
 
 ## File layout (full project)
 
-```
+```text
 sg-map-toy/
 ├── docs/
 │   ├── ROADMAP.md              ← this file
