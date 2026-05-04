@@ -72,7 +72,7 @@ router.get("/", async (req, res) => {
 
   let query = supabase
     .from("pois")
-    .select("id, name, category, description, address, location");
+    .select("id, name, category, description, address, location::geometry");
 
   if (category) {
     query = query.eq("category", category);
@@ -88,14 +88,13 @@ router.get("/", async (req, res) => {
   // Extract lat/lng from PostGIS geography string
   // Supabase returns location as 'POINT(lng lat)' WKT
   const hits = (data || []).map((row) => {
+    // console.log("raw row:", JSON.stringify(row));
     let lat = null,
       lng = null;
     if (row.location) {
-      const match = row.location.match(/POINT\(([^ ]+) ([^ )]+)\)/);
-      if (match) {
-        lng = parseFloat(match[1]);
-        lat = parseFloat(match[2]);
-      }
+      const coordinates = row.location.coordinates;
+      lng = coordinates[0];
+      lat = coordinates[1];
     }
     return { ...row, lat, lng };
   });
