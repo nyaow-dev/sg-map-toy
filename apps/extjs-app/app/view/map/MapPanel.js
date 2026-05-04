@@ -205,7 +205,7 @@ Ext.define("SGMapApp.view.map.MapPanel", {
     return new ol.style.Style({
       image: new ol.style.Icon({
         src: iconSrc,
-        scale: 0.6,
+        scale: 0.05,
         anchor: [0.5, 1], // pin anchors at the bottom-centre of the image
       }),
       text: new ol.style.Text({
