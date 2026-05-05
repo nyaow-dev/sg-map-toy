@@ -4,104 +4,109 @@ import { supabase } from "../lib/supabase.js";
 
 export const router = Router();
 
-// ------------------------------------------------------------------
-// GET /api/pois
-// Query params: q (text search), category, radius_km, lat, lng
-// ------------------------------------------------------------------
-// router.get('/', async (req, res) => {
-//   const { q, category, radius_km, lat, lng } = req.query;
+const isPingingSupabase = true;
 
-//   const must    = [];
-//   const filters = [];
+if (isPingingSupabase === false) {
+  // ------------------------------------------------------------------
+  // GET /api/pois
+  // Query params: q (text search), category, radius_km, lat, lng
+  // ------------------------------------------------------------------
+  router.get("/", async (req, res) => {
+    const { q, category, radius_km, lat, lng } = req.query;
 
-//   // Full-text search across name, description, address
-//   if (q) {
-//     must.push({
-//       multi_match: {
-//         query:  q,
-//         fields: ['name^3', 'description', 'address']
-//       }
-//     });
-//   }
+    const must = [];
+    const filters = [];
 
-//   // Exact category filter
-//   if (category) {
-//     filters.push({ term: { category } });
-//   }
-
-//   // Geo distance filter
-//   if (radius_km && lat && lng) {
-//     filters.push({
-//       geo_distance: {
-//         distance: `${radius_km}km`,
-//         location: { lat: parseFloat(lat), lon: parseFloat(lng) }
-//       }
-//     });
-//   }
-
-//   try {
-//     const result = await esClient.search({
-//       index: ES_INDEX,
-//       body: {
-//         size: 100,
-//         query: {
-//           bool: {
-//             must:   must.length   ? must   : [{ match_all: {} }],
-//             filter: filters
-//           }
-//         },
-//         sort: must.length
-//           ? ['_score']                                      // relevance when text searching
-//           : [{ 'name.keyword': 'asc' }]                    // alphabetical otherwise
-//       }
-//     });
-
-//     const hits  = result.hits.hits.map(h => ({ id: h._id, ...h._source }));
-//     const total = result.hits.total.value;
-
-//     res.json({ hits, total });
-//   } catch (err) {
-//     console.error('ES search error:', err);
-//     res.status(500).json({ error: err.message });
-//   }
-// });
-
-// Temporary Supabase-first GET — replace with ES in Tier 2 proper
-router.get("/", async (req, res) => {
-  const { q, category } = req.query;
-
-  let query = supabase
-    .from("pois")
-    .select("id, name, category, description, address, location::geometry");
-
-  if (category) {
-    query = query.eq("category", category);
-  }
-
-  if (q) {
-    query = query.ilike("name", `%${q}%`);
-  }
-
-  const { data, error } = await query.limit(100);
-  if (error) return res.status(500).json({ error: error.message });
-
-  // Extract lat/lng from PostGIS geography string
-  // Supabase returns location as 'POINT(lng lat)' WKT
-  const hits = (data || []).map((row) => {
-    // console.log("raw row:", JSON.stringify(row));
-    let lat = null,
-      lng = null;
-    if (row.location) {
-      const coordinates = row.location.coordinates;
-      lng = coordinates[0];
-      lat = coordinates[1];
+    // Full-text search across name, description, address
+    if (q) {
+      must.push({
+        multi_match: {
+          query: q,
+          fields: ["name^3", "description", "address"],
+        },
+      });
     }
-    return { ...row, lat, lng };
+
+    // Exact category filter
+    if (category) {
+      filters.push({ term: { category } });
+    }
+
+    // Geo distance filter
+    if (radius_km && lat && lng) {
+      filters.push({
+        geo_distance: {
+          distance: `${radius_km}km`,
+          location: { lat: parseFloat(lat), lon: parseFloat(lng) },
+        },
+      });
+    }
+
+    try {
+      const result = await esClient.search({
+        index: ES_INDEX,
+        body: {
+          size: 100,
+          query: {
+            bool: {
+              must: must.length ? must : [{ match_all: {} }],
+              filter: filters,
+            },
+          },
+          sort: must.length
+            ? ["_score"] // relevance when text searching
+            : [{ "name.keyword": "asc" }], // alphabetical otherwise
+        },
+      });
+
+      const hits = result.hits.hits.map((h) => ({ id: h._id, ...h._source }));
+      const total = result.hits.total.value;
+
+      res.json({ hits, total });
+    } catch (err) {
+      console.error("ES search error:", err);
+      res.status(500).json({ error: err.message });
+    }
   });
+} else {
+  // ------------------------------------------------------------------
+  // Temporary Supabase-first GET — replace with ES in Tier 3 proper
+  // ------------------------------------------------------------------
+  router.get("/", async (req, res) => {
+    const { q, category } = req.query;
 
-  res.json({ hits, total: hits.length });
-});
+    let query = supabase
+      .from("pois")
+      .select("id, name, category, description, address, location::geometry");
 
+    if (category) {
+      query = query.eq("category", category);
+    }
+
+    if (q) {
+      query = query.ilike("name", `%${q}%`);
+    }
+
+    const { data, error } = await query.limit(100);
+    if (error) return res.status(500).json({ error: error.message });
+
+    // Extract lat/lng from PostGIS geography string
+    // Supabase returns location as 'POINT(lng lat)' WKT
+    const hits = (data || []).map((row) => {
+      // console.log("raw row:", JSON.stringify(row));
+      let lat = null,
+        lng = null;
+      if (row.location) {
+        const coordinates = row.location.coordinates;
+        lng = coordinates[0];
+        lat = coordinates[1];
+      }
+      return { ...row, lat, lng };
+    });
+
+    res.json({ hits, total: hits.length });
+  });
+}
 // ------------------------------------------------------------------
 // POST /api/pois  — create (dual-write: Supabase then ES)
 // ------------------------------------------------------------------

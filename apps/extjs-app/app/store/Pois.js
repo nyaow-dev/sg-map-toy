@@ -9,35 +9,39 @@
  * The proxy defines how and where data is fetched.
  * extraParams are merged into the query string on every load().
  */
-Ext.define('SGMapApp.store.Pois', {
-    extend: 'Ext.data.Store',
-    alias:  'store.pois',
+Ext.define("SGMapApp.store.Pois", {
+  extend: "Ext.data.Store",
+  alias: "store.pois",
 
-    requires: ['SGMapApp.model.Poi'],
+  requires: ["SGMapApp.model.Poi"],
 
-    model: 'SGMapApp.model.Poi',
+  model: "SGMapApp.model.Poi",
 
-    pageSize: 25,
+  pageSize: 25,
 
-    proxy: {
-        type: 'ajax',
-        url:  'http://localhost:3001/api/pois',
+  proxy: {
+    type: "ajax",
+    url: "http://localhost:3001/api/pois",
 
-        // Default search params — updated by the search toolbar
-        extraParams: {
-            q:        '',
-            category: ''
-        },
-
-        reader: {
-            type:          'json',
-            rootProperty:  'hits',   // API returns { hits: [...], total: N }
-            totalProperty: 'total'
-        }
+    // Default search params — updated by the search toolbar
+    extraParams: {
+      q: "",
+      category: "",
     },
 
-    autoLoad: true,
+    reader: {
+      type: "json",
+      rootProperty: "hits", // API returns { hits: [...], total: N }
+      totalProperty: "total",
+    },
+  },
 
-    // Sort locally after load (server returns up to 100 results)
-    sorters: [{ property: 'name', direction: 'ASC' }]
+  autoLoad: true,
+
+  listeners: {
+    load: "onStoreLoad",
+  },
+
+  // Sort locally after load (server returns up to 100 results)
+  sorters: [{ property: "name", direction: "ASC" }],
 });

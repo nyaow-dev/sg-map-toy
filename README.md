@@ -42,6 +42,17 @@ npx serve .
 
 > Url: <http://localhost:3000/>
 
+## Elastic search
+
+### Check elastic search is running in docker
+
+```bash
+cd apps/api
+node scripts/health-check.js
+```
+
+> Elastic Dev Console: <http://localhost:5601/app/dev_tools#/console>
+
 ---
 
 ### Progess

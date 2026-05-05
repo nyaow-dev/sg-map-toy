@@ -47,6 +47,7 @@ Ext.define("SGMapApp.view.grid.PoiGrid", {
       hidden: true, // hidden by default, user can show via column menu
     },
     {
+      text: "Actions",
       xtype: "actioncolumn",
       width: 60,
       items: [
@@ -101,6 +102,8 @@ Ext.define("SGMapApp.view.grid.PoiGrid", {
           },
         },
       },
+      "-",
+      { text: "Add POI", iconCls: "x-fa fa-plus", handler: "onAddPoi" },
     ],
   },
 

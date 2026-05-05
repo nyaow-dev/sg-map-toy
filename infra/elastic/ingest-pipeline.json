@@ -11,11 +11,7 @@
       "script": {
         "description": "Build geo_point from lat/lng fields if location not set",
         "lang": "painless",
-        "source": """
-          if (ctx.location == null && ctx.lat != null && ctx.lng != null) {
-            ctx.location = ['lat': ctx.lat, 'lon': ctx.lng];
-          }
-        """
+        "source": " if (ctx.location == null && ctx.lat != null && ctx.lng != null) { ctx.location = ['lat': ctx.lat, 'lon': ctx.lng]; } "
       }
     },
     {

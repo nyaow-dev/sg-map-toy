@@ -13,6 +13,7 @@ node scripts/setup-elastic.js
 ```
 
 This registers:
+
 - **Index template** for `sg-pois-*` with geo_point field, keyword/text split fields
 - **Ingest pipeline** that normalises category and validates coordinates
 
@@ -28,7 +29,8 @@ Inserts ~50 real Bedok POIs: hawker centres, MRT stations, parks, schools,
 community clubs, and shopping centres with actual coordinates.
 
 Verify in Kibana Dev Tools:
-```
+
+```bash
 GET sg-pois-main/_count
 GET sg-pois-main/_search
 { "size": 3, "sort": [{ "name.keyword": "asc" }] }
@@ -236,12 +238,12 @@ GET sg-pois-main/_search
 
 ## Tier 2 checklist
 
-- [ ] `node scripts/setup-elastic.js` runs cleanly
-- [ ] `node scripts/seed-pois.js` inserts ~50 documents
-- [ ] `GET /api/pois` returns JSON with real data
-- [ ] `GET /api/pois?category=hawker` filters correctly
-- [ ] Grid panel renders with real POI rows
-- [ ] Map markers update when grid loads
+- [x] `node scripts/setup-elastic.js` runs cleanly
+- [x] `node scripts/seed-pois.js` inserts ~50 documents
+- [x] `GET /api/pois` returns JSON with real data
+- [x] `GET /api/pois?category=hawker` filters correctly
+- [x] Grid panel renders with real POI rows
+- [x] Map markers update when grid loads
 - [ ] Search field triggers a new ES query and refreshes both grid and map
 
 **→ When all boxes are checked, proceed to `TIER-3-CRUD-SUPABASE.md`**

@@ -30,14 +30,14 @@ async function main() {
 
   // Register ingest pipeline
   const pipeline = JSON.parse(
-    readFileSync(join(__dirname, '../../infra/elastic/ingest-pipeline.json'), 'utf8')
+    readFileSync(join(__dirname, '../../../infra/elastic/ingest-pipeline.json'), 'utf8')
   );
   await put('/_ingest/pipeline/sg-poi-pipeline', pipeline);
   console.log('✓ Ingest pipeline registered');
 
   // Register index template
   const template = JSON.parse(
-    readFileSync(join(__dirname, '../../infra/elastic/index-template.json'), 'utf8')
+    readFileSync(join(__dirname, '../../../infra/elastic/index-template.json'), 'utf8')
   );
   await put('/_index_template/sg-pois-template', template);
   console.log('✓ Index template registered');
