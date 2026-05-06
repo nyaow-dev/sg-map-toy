@@ -244,6 +244,6 @@ GET sg-pois-main/_search
 - [x] `GET /api/pois?category=hawker` filters correctly
 - [x] Grid panel renders with real POI rows
 - [x] Map markers update when grid loads
-- [ ] Search field triggers a new ES query and refreshes both grid and map
+- [x] Search field triggers a new ES query and refreshes both grid and map
 
 **→ When all boxes are checked, proceed to `TIER-3-CRUD-SUPABASE.md`**
