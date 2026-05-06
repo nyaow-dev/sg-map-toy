@@ -4,7 +4,7 @@ import { supabase } from "../lib/supabase.js";
 
 export const router = Router();
 
-const isPingingSupabase = true;
+const isPingingSupabase = false;
 
 if (isPingingSupabase === false) {
   // ------------------------------------------------------------------
@@ -12,7 +12,7 @@ if (isPingingSupabase === false) {
   // Query params: q (text search), category, radius_km, lat, lng
   // ------------------------------------------------------------------
   router.get("/", async (req, res) => {
-    const { q, category, radius_km, lat, lng } = req.query;
+    let { q, category, radius_km, lat, lng } = req.query;
 
     const must = [];
     const filters = [];
@@ -20,14 +20,43 @@ if (isPingingSupabase === false) {
     // Full-text search across name, description, address
     if (q) {
       must.push({
-        multi_match: {
-          query: q,
-          fields: ["name^3", "description", "address"],
+        bool: {
+          should: [
+            // Prefix match on last typed word — fast, good for autocomplete-style search
+            {
+              match_phrase_prefix: {
+                name: {
+                  query: q,
+                  boost: 3, // name matches rank higher
+                },
+              },
+            },
+            {
+              match_phrase_prefix: {
+                address: { query: q },
+              },
+            },
+            {
+              match_phrase_prefix: {
+                description: { query: q },
+              },
+            },
+            // Also keep fuzzy whole-word match to catch typos
+            {
+              multi_match: {
+                query: q,
+                fields: ["name^3", "description", "address"],
+                fuzziness: "AUTO",
+              },
+            },
+          ],
+          minimum_should_match: 1,
         },
       });
     }
 
     // Exact category filter
+    category = typeof category === "string" && category ? category : null;
     if (category) {
       filters.push({ term: { category } });
     }
@@ -43,7 +72,7 @@ if (isPingingSupabase === false) {
     }
 
     try {
-      const result = await esClient.search({
+      const esQuery = {
         index: ES_INDEX,
         body: {
           size: 100,
@@ -57,8 +86,11 @@ if (isPingingSupabase === false) {
             ? ["_score"] // relevance when text searching
             : [{ "name.keyword": "asc" }], // alphabetical otherwise
         },
-      });
+      };
 
+      // console.log("ES Query:", JSON.stringify(esQuery, null, 2));
+
+      const result = await esClient.search(esQuery);
       const hits = result.hits.hits.map((h) => ({ id: h._id, ...h._source }));
       const total = result.hits.total.value;
 

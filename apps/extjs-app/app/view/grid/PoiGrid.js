@@ -94,7 +94,11 @@ Ext.define("SGMapApp.view.grid.PoiGrid", {
           "landmark",
         ],
         listeners: {
-          select: "onCategoryChange",
+          select: function (combo, record) {
+            // Extract plain string value before passing to controller
+            var val = combo.getValue();
+            combo.up("app-main").getController().onCategoryChange(combo, val);
+          },
           change: function (combo, val) {
             if (!val) {
               combo.up("app-main").getController().onCategoryClear();
