@@ -4,7 +4,8 @@ import { supabase } from "../lib/supabase.js";
 
 export const router = Router();
 
-const isPingingSupabase = false;
+const isPingingSupabase = true;
+// const isPingingSupabase = false;
 
 if (isPingingSupabase === false) {
   // ------------------------------------------------------------------
