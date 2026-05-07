@@ -199,6 +199,9 @@ router.post("/", async (req, res) => {
         updated_at: data.updated_at,
       },
     });
+
+    // Force immediate refresh so next search sees the creation
+    await esClient.indices.refresh({ index: ES_INDEX });
   } catch (esErr) {
     // Supabase write succeeded — log ES failure but don't fail the request.
     // In production you'd push to a retry queue here.
@@ -248,6 +251,9 @@ router.put("/:id", async (req, res) => {
         updated_at: data.updated_at,
       },
     });
+
+    // Force immediate refresh so next search sees the update
+    await esClient.indices.refresh({ index: ES_INDEX });
   } catch (esErr) {
     console.error("ES update error:", esErr.message);
   }
@@ -268,6 +274,9 @@ router.delete("/:id", async (req, res) => {
   // 2. Delete from Elasticsearch
   try {
     await esClient.delete({ index: ES_INDEX, id });
+
+    // Force immediate refresh so next search sees the deletion
+    await esClient.indices.refresh({ index: ES_INDEX });
   } catch (esErr) {
     console.error("ES delete error:", esErr.message);
   }

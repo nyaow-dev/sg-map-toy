@@ -211,12 +211,12 @@ openPoiForm: function (record, lat, lng) {
 
 ## Tier 3 checklist
 
-- [ ] Form window opens from "Add POI" button and from grid Edit action
-- [ ] Clicking empty map space pre-fills lat/lng in the form
-- [ ] Saving a new POI writes to Supabase — verify in Supabase Table Editor
-- [ ] Saving a new POI also appears in `GET sg-pois-main/_search` in Kibana
-- [ ] Editing an existing POI updates both Supabase and ES
-- [ ] Deleting a POI removes it from both stores
-- [ ] Grid and map refresh after every save/delete
+- [x] Form window opens from "Add POI" button and from grid Edit action
+- [x] Clicking empty map space pre-fills lat/lng in the form
+- [x] Saving a new POI writes to Supabase — verify in Supabase Table Editor
+- [x] Saving a new POI also appears in `GET sg-pois-main/_search` in Kibana
+- [x] Editing an existing POI updates both Supabase and ES
+- [x] Deleting a POI removes it from both stores
+- [x] Grid and map refresh after every save/delete
 
 **→ When all boxes are checked, proceed to `TIER-4-DEPLOY-ECLIPSE.md`**
