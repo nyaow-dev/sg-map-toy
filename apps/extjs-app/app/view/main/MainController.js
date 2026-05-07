@@ -157,6 +157,11 @@ Ext.define("SGMapApp.view.main.MainController", {
     var me = this;
     var win = Ext.create("SGMapApp.view.form.PoiForm");
 
+    // Prevent multiple form windows open at once
+    // if (Ext.ComponentQuery.query("poiform").length > 0) {
+    //   return;
+    // }
+
     if (record) {
       // Editing existing record
       win.setTitle("Edit POI");
@@ -202,7 +207,6 @@ Ext.define("SGMapApp.view.main.MainController", {
     //   },
     //   { id: "3", name: "Bedok MRT", category: "mrt", lng: 103.93, lat: 1.3241 },
     // ];
-
     // console.log(`MainController onMapReady`);
     // mapPanel.loadMarkers(testPois);
   },

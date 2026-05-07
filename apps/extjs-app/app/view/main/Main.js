@@ -45,8 +45,8 @@ Ext.define("SGMapApp.view.main.Main", {
         "->",
         {
           text: "Add POI",
-          iconCls: "x-fa fa-plus",
-          ui: "action",
+          // iconCls: "x-fa fa-plus",
+          // ui: "action",
           handler: "onAddPoiClick",
         },
       ],

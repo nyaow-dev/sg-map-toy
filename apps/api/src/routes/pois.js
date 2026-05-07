@@ -151,6 +151,21 @@ router.post("/", async (req, res) => {
       .json({ error: "name, category, lat, lng are required" });
   }
 
+  // 0. Check for near-duplicate: same name + category created in last 10 seconds
+  const { data: existing } = await supabase
+    .from("pois")
+    .select("id")
+    .eq("name", name)
+    .eq("category", category)
+    .gte("created_at", new Date(Date.now() - 10000).toISOString())
+    .limit(1);
+
+  if (existing && existing.length > 0) {
+    return res.status(409).json({
+      error: "Duplicate submission detected. This POI was recently created.",
+    });
+  }
+
   // 1. Write to Supabase (source of truth)
   const { data, error } = await supabase
     .from("pois")
