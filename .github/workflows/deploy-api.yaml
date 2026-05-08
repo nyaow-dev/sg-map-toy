@@ -5,8 +5,8 @@ on:
     branches:
       - master
     paths:
-      - 'apps/api/**'
-      - '.github/workflows/deploy-api.yaml'
+      - "apps/api/**"
+      - ".github/workflows/deploy-api.yaml"
 
 env:
   PROJECT_ID: sg-map-toy
@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write       # required for workload identity
+      id-token: write # required for workload identity
 
     steps:
       - name: Checkout
@@ -30,6 +30,7 @@ jobs:
         with:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
           service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          token_format: "access_token"
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -48,15 +49,22 @@ jobs:
           docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}/${{ env.SERVICE }}:latest
 
       - name: Deploy to Cloud Run
-        run: |
-          gcloud run deploy ${{ env.SERVICE }} \
-            --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}/${{ env.SERVICE }}:${{ github.sha }} \
-            --region ${{ env.REGION }} \
-            --platform managed \
-            --allow-unauthenticated \
-            --max-instances 1 \
-            --set-env-vars "NODE_ENV=production,SUPABASE_URL=${{ secrets.SUPABASE_URL }},SUPABASE_SERVICE_KEY=${{ secrets.SUPABASE_SERVICE_KEY }},ES_URL=" \
-            --quiet
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ env.SERVICE }}
+          region: ${{ env.REGION }}
+          image: ${{ env.REGION }}-docker.pkg.dev/${{ PROJECT_ID }}/${{ env.SERVICE }}/${{ env.SERVICE }}:${{ github.sha }}
+
+      # - name: Deploy to Cloud Run
+      #   run: |
+      #     gcloud run deploy ${{ env.SERVICE }} \
+      #       --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}/${{ env.SERVICE }}:${{ github.sha }} \
+      #       --region ${{ env.REGION }} \
+      #       --platform managed \
+      #       --allow-unauthenticated \
+      #       --max-instances 1 \
+      #       --set-env-vars "NODE_ENV=production,SUPABASE_URL=${{ secrets.SUPABASE_URL }},SUPABASE_SERVICE_KEY=${{ secrets.SUPABASE_SERVICE_KEY }},ES_URL=" \
+      #       --quiet
 
       - name: Show deployed URL
         run: |
