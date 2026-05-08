@@ -1,20 +1,19 @@
 import { Router } from "express";
 import { esClient, ES_INDEX } from "../lib/elastic.js";
 import { supabase } from "../lib/supabase.js";
+import { isEsAvailable } from "../lib/health.js";
 
 export const router = Router();
 
-const isPingingSupabase = true;
-// const isPingingSupabase = false;
+// ------------------------------------------------------------------
+// GET /api/pois
+// Query params: q (text search), category, radius_km, lat, lng
+// ------------------------------------------------------------------
+router.get("/", async (req, res) => {
+  let { q, category, radius_km, lat, lng } = req.query;
 
-if (isPingingSupabase === false) {
-  // ------------------------------------------------------------------
-  // GET /api/pois
-  // Query params: q (text search), category, radius_km, lat, lng
-  // ------------------------------------------------------------------
-  router.get("/", async (req, res) => {
-    let { q, category, radius_km, lat, lng } = req.query;
-
+  // Try ES first, fall back to Supabase if unavailable
+  if (await isEsAvailable()) {
     const must = [];
     const filters = [];
 
@@ -92,7 +91,10 @@ if (isPingingSupabase === false) {
       // console.log("ES Query:", JSON.stringify(esQuery, null, 2));
 
       const result = await esClient.search(esQuery);
-      const hits = result.hits.hits.map((h) => ({ id: h._id, ...h._source }));
+      const hits = result.hits.hits.map((h) => ({
+        id: h._id,
+        ...h._source,
+      }));
       const total = result.hits.total.value;
 
       res.json({ hits, total });
@@ -100,13 +102,8 @@ if (isPingingSupabase === false) {
       console.error("ES search error:", err);
       res.status(500).json({ error: err.message });
     }
-  });
-} else {
-  // ------------------------------------------------------------------
-  // Temporary Supabase-first GET — replace with ES in Tier 3 proper
-  // ------------------------------------------------------------------
-  router.get("/", async (req, res) => {
-    const { q, category } = req.query;
+  } else {
+    console.warn("ES unavailable, falling back to Supabase");
 
     let query = supabase
       .from("pois")
@@ -138,8 +135,8 @@ if (isPingingSupabase === false) {
     });
 
     res.json({ hits, total: hits.length });
-  });
-}
+  }
+});
 // ------------------------------------------------------------------
 // POST /api/pois  — create (dual-write: Supabase then ES)
 // ------------------------------------------------------------------
