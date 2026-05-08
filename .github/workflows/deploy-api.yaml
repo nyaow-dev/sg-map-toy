@@ -35,7 +35,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Configure Docker for Artifact Registry
-        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
 
       - name: Build and push Docker image
         run: |
@@ -48,22 +48,15 @@ jobs:
           docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}/${{ env.SERVICE }}:latest
 
       - name: Deploy to Cloud Run
-        uses: google-github-actions/deploy-cloudrun@v2
-        with:
-          service: ${{ env.SERVICE }}
-          region: ${{ env.REGION }}
-          image: ${{ env.REGION }}-docker.pkg.dev/${{ PROJECT_ID }}/${{ env.SERVICE }}/${{ env.SERVICE }}:${{ github.sha }}
-
-      # - name: Deploy to Cloud Run
-      #   run: |
-      #     gcloud run deploy ${{ env.SERVICE }} \
-      #       --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}/${{ env.SERVICE }}:${{ github.sha }} \
-      #       --region ${{ env.REGION }} \
-      #       --platform managed \
-      #       --allow-unauthenticated \
-      #       --max-instances 1 \
-      #       --set-env-vars "NODE_ENV=production,SUPABASE_URL=${{ secrets.SUPABASE_URL }},SUPABASE_SERVICE_KEY=${{ secrets.SUPABASE_SERVICE_KEY }},ES_URL=" \
-      #       --quiet
+        run: |
+          gcloud run deploy ${{ env.SERVICE }} \
+            --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}/${{ env.SERVICE }}:${{ github.sha }} \
+            --region ${{ env.REGION }} \
+            --platform managed \
+            --allow-unauthenticated \
+            --max-instances 1 \
+            --set-env-vars "NODE_ENV=production,SUPABASE_URL=${{ secrets.SUPABASE_URL }},SUPABASE_SERVICE_KEY=${{ secrets.SUPABASE_SERVICE_KEY }},ES_URL=" \
+            --quiet
 
       - name: Show deployed URL
         run: |
