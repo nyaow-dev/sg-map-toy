@@ -6,7 +6,7 @@ on:
       - master
     paths:
       - 'apps/api/**'
-      - '.github/workflows/deploy-api.yml'
+      - '.github/workflows/deploy-api.yaml'
 
 env:
   PROJECT_ID: sg-map-toy
