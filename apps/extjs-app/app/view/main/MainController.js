@@ -136,8 +136,12 @@ Ext.define("SGMapApp.view.main.MainController", {
       function (btn) {
         if (btn !== "yes") return;
 
+        var apiBase = window.APP_CONFIG
+          ? window.APP_CONFIG.apiBase
+          : "http://localhost:3001";
+
         Ext.Ajax.request({
-          url: "http://localhost:3001/api/pois/" + record.get("id"),
+          url: apiBase + "/api/pois/" + record.get("id"),
           method: "DELETE",
           success: function () {
             me.reloadStore();

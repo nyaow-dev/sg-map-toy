@@ -2,14 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src":  "apps/extjs-app/build/production/SGMapApp/**",
-      "use":  "@vercel/static"
+      "src": "apps/extjs-app/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
-      "src":  "/(.*)",
-      "dest": "/apps/extjs-app/build/production/SGMapApp/$1"
+      "src": "/(.*)",
+      "dest": "/apps/extjs-app/$1"
     }
   ]
 }

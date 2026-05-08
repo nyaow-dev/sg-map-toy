@@ -21,8 +21,12 @@ Ext.define("SGMapApp.view.form.PoiFormController", {
     var values = form.getValues();
     var isEdit = !!values.id;
 
+    var apiBase = window.APP_CONFIG
+      ? window.APP_CONFIG.apiBase
+      : "http://localhost:3001";
+
     Ext.Ajax.request({
-      url: "http://localhost:3001/api/pois" + (isEdit ? "/" + values.id : ""),
+      url: apiBase + "/api/pois" + (isEdit ? "/" + values.id : ""),
       method: isEdit ? "PUT" : "POST",
       jsonData: {
         name: values.name,
