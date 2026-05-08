@@ -21,7 +21,7 @@ Ext.define("SGMapApp.store.Pois", {
 
   proxy: {
     type: "ajax",
-    url: "http://localhost:3001/api/pois",
+    url: "https://sg-map-api-xsbo7cqsfa-uw.a.run.app/api/pois",
 
     // Default search params — updated by the search toolbar
     extraParams: {
