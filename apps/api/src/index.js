@@ -8,11 +8,18 @@ const PORT = process.env.PORT || 3001;
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "http://localhost:1841",
-      "https://sg-map-toy.vercel.app",
-    ],
+    origin: function (origin, callback) {
+      const allowed = ["http://localhost:3000", "http://localhost:1841"];
+
+      // Allow any vercel.app subdomain for this project
+      const vercelPreview = /^https:\/\/sg-map[a-z0-9-]*\.vercel\.app$/;
+
+      if (!origin || allowed.includes(origin) || vercelPreview.test(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS blocked: " + origin));
+      }
+    },
   }),
 );
 app.use(express.json());
