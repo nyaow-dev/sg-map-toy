@@ -1,5 +1,8 @@
 {
   "version": 2,
+  "buildCommand": "npm install",
+  "outputDirectory": ".",
+  "installCommand": "npm install",
   "builds": [
     {
       "src": "apps/extjs-app/**",
