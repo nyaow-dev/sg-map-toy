@@ -1,4 +1,4 @@
-# Toy Project Roadmap — SG Map App
+# SG Map Toy Project — Roadmap
 
 One month to get as close to the production stack as possible.
 Each tier is independently useful — stop wherever time runs out.
@@ -14,7 +14,7 @@ a CRUD form. The stack mirrors production as closely as free-tier constraints al
 ### Production → Toy mapping
 
 | Production | Toy equivalent |
-|---|---|
+| ---------- | -------------- |
 | ExtJS 7.4.0 + Sencha Architect + Eclipse | ExtJS 7.4.0 + VS Code (migrate to Eclipse in Tier 4) |
 | On-prem PostgreSQL + PostGIS | Supabase (PostgreSQL + PostGIS, free tier) |
 | Elasticsearch + full Beats suite + Logstash | Elasticsearch + Kibana only (Docker) |
@@ -24,113 +24,203 @@ a CRUD form. The stack mirrors production as closely as free-tier constraints al
 
 ---
 
-## Tier 0 — Environment setup (Day 1)
+## Completed tiers
 
-**Goal:** Every tool installed and talking to each other. No app code yet.
+### Tier 0 — Environment setup ✅
 
-- [ ] Docker Desktop running
-- [ ] Node.js 20 LTS installed
-- [ ] VS Code with recommended extensions installed
-- [ ] Elasticsearch 8.13 + Kibana running locally via Docker
-- [ ] Supabase project created, PostGIS extension enabled
-- [ ] Confirm ES health at `http://localhost:9200`
-- [ ] Confirm Kibana at `http://localhost:5601`
-- [ ] Confirm Supabase DB connection string in hand
+- Docker Desktop, Node 20, VS Code extensions
+- Elasticsearch + Kibana via Docker
+- Supabase project, PostGIS enabled, pois table created
+- Health check script passing
 
-**Output:** A working local infrastructure, nothing deployed yet.
+### Tier 1 — ExtJS app skeleton + map ✅
 
-See: `TIER-0-SETUP.md`
+- ExtJS 6.2.0 GPL loaded from local vendor folder
+- OpenLayers map rendering consistently via boxready hook
+- Border layout: north toolbar, center map, east grid panel
+- Hardcoded Bedok markers loading via mapready custom event
+- Deployed to Vercel (static file serving, no build step)
 
----
+### Tier 2 — Elasticsearch data layer ✅
 
-## Tier 1 — ExtJS app skeleton + map (Days 2–6)
+- ES index template registered (sg-pois-main)
+- Ingest pipeline registered (normalise, geo_point, slow_request tag)
+- 44 real Bedok POIs seeded
+- Node API with ES search (partial match via match_phrase_prefix + fuzziness)
+- ES availability check with 30s cache, Supabase fallback
+- Grid and map driven by live API data
+- Category filter and text search wired end to end
 
-**Goal:** A running ExtJS application in VS Code that loads an OpenLayers map
-centred on your neighbourhood in Bedok, with hardcoded markers.
+### Tier 3 — CRUD form + Supabase dual-write ✅
 
-- [ ] ExtJS 7.4.0 SDK in place (see note below on licensing)
-- [ ] Sencha CMD installed and generating the app scaffold
-- [ ] OpenLayers integrated as a vendor library
-- [ ] Map loads centred on Bedok, Singapore
-- [ ] Two or three hardcoded markers of different icon types render on the map
-- [ ] App builds and opens in browser via `sencha app watch`
+- Supabase get_pois() RPC function for clean lat/lng extraction
+- Dual-write: Supabase (source of truth) → ES (search index)
+- PoiForm window with coordinate validation (Singapore bounding box)
+- Map click pre-fills coordinates in form
+- Duplicate submit guards: button disable + window singleton + API 10s check
+- Delete forces ES index refresh before API responds
+- Deployed API to Cloud Run via GitHub Actions (Workload Identity)
 
-**Output:** Visual proof the ExtJS + map stack works before wiring any data.
+### Tier 4 — Deployment ✅
 
-See: `TIER-1-EXTJS-MAP.md`
-
----
-
-## Tier 2 — Elasticsearch data layer (Days 7–12)
-
-**Goal:** Real data flows from a seed script into Elasticsearch,
-and the ExtJS app displays it in a Grid panel fetched live.
-
-- [ ] ES index template for Singapore POI data created
-- [ ] Ingest pipeline created (normalise category, tag geolocation)
-- [ ] Seed script inserts ~50 Bedok POIs (hawker centres, MRT, parks, etc.)
-- [ ] Node.js Express API created with two endpoints:
-  - `GET /api/pois` — search/filter POIs from ES
-  - `POST /api/pois`, `PUT /api/pois/:id`, `DELETE /api/pois/:id` — CRUD
-- [ ] ExtJS Grid panel wired to `GET /api/pois`
-- [ ] Map markers driven by the same API response (not hardcoded)
-
-**Output:** Data-driven map and grid. Core of the production workflow.
-
-See: `TIER-2-ELASTICSEARCH.md`
+- API on Cloud Run (asia-southeast1, max 1 instance)
+- Frontend on Vercel (static, vendor folder for ExtJS + theme files)
+- CORS configured for Vercel preview + production URLs
+- ES falls back to Supabase when ES_URL is empty (Cloud Run has no ES)
+- config.js switches API base URL between localhost and Cloud Run
 
 ---
 
-## Tier 3 — CRUD form + Supabase (Days 13–20)
+## Upcoming tiers
 
-**Goal:** A form panel that creates/edits/deletes POIs, writing to both
-Elasticsearch and Supabase (mirroring the production dual-write pattern
-where PostGIS holds the source of truth and ES holds the search index).
+### Tier 5 — Observability: Filebeat + Logstash + Kibana
 
-- [ ] Supabase `pois` table created with PostGIS `geography` column
-- [ ] API updated to dual-write: Supabase (source of truth) + ES (search index)
-- [ ] ExtJS Form panel wired to the API
-- [ ] Create, update, delete all work end-to-end
-- [ ] Grid and map refresh after mutations
+**Goal:** Ship API logs into Elasticsearch and build a basic Kibana dashboard.
+Estimated time: 5–7 days.
 
-**Output:** Full CRUD loop mirroring the production write pattern.
+This is the minimal Beats workflow — one Beat (Filebeat), one pipeline
+(Logstash), one destination (ES). Get this working first before adding
+more Beats.
 
-See: `TIER-3-CRUD-SUPABASE.md`
+#### 5.1 — Structured logging in the API
+
+Before shipping logs anywhere, make them worth shipping.
+Replace ad-hoc `console.log` with structured JSON logging:
+
+- [ ] Install `pino` logger: `npm install pino pino-pretty`
+- [ ] Create `src/lib/logger.js` — Pino instance, JSON in prod, pretty in dev
+- [ ] Replace all `console.log/warn/error` in routes with logger calls
+- [ ] Each log line emits: `{ level, timestamp, service, route, method, status, response_ms, error? }`
+- [ ] API writes logs to stdout (Cloud Run captures this automatically)
+- [ ] Locally, redirect stdout to a log file for Filebeat to read
+
+Example log line the pipeline will receive:
+
+```json
+{"level":"info","time":"2026-05-01T10:00:00Z","service":"sg-map-api","route":"/api/pois","method":"GET","status":200,"response_ms":45}
+```
+
+#### 5.2 — Logstash pipeline
+
+- [ ] Add Logstash container to `infra/elastic/docker-compose.yml`
+- [ ] Create `infra/logstash/pipeline/api-logs.conf`:
+  - Input: Beats on port 5044
+  - Filter: JSON parse, add `@timestamp` from log time field, drop health check pings
+  - Output: Elasticsearch index `sg-api-logs-{+YYYY.MM.dd}` (daily rolling index)
+- [ ] Create `infra/logstash/logstash.yml` (heap size, pipeline config path)
+- [ ] Verify Logstash starts and connects to ES: `curl localhost:9600`
+
+#### 5.3 — Filebeat
+
+- [ ] Add Filebeat container to `docker-compose.yml`
+- [ ] Create `infra/filebeat/filebeat.yml`:
+  - Input: watch the API log file path
+  - Output: Logstash at port 5044 (not directly to ES — Logstash transforms first)
+  - Add field: `service: sg-map-api`
+- [ ] Mount the API log file into the Filebeat container
+- [ ] Confirm documents appearing in `sg-api-logs-*` in Kibana Discover
+
+#### 5.4 — Kibana dashboard
+
+- [ ] Create Data View for `sg-api-logs-*` with `@timestamp` as time field
+- [ ] Build dashboard with these panels:
+  - Request volume over time (date_histogram)
+  - Error rate by route (terms + filter on level:error)
+  - Average response time by route (avg aggregation)
+  - Top slowest requests (top_hits sorted by response_ms desc)
+- [ ] Export dashboard as `infra/kibana/dashboard-api-logs.ndjson` for version control
 
 ---
 
-## Tier 4 — Deployment + Eclipse migration (Days 21–28)
+### Tier 6 — Metricbeat (system metrics)
 
-**Goal:** App deployed to free-tier cloud. Optional: migrate to Eclipse workflow.
+**Goal:** Add server health metrics alongside application logs.
+Estimated time: 2–3 days (much faster once Tier 5 infra is in place).
 
-- [ ] API containerised and deployed to Google Cloud Run
-- [ ] Front-end deployed to Vercel
-- [ ] Environment variables handled properly (no secrets in code)
-- [ ] (Optional) Eclipse JEE 2025 installed
-- [ ] (Optional) ExtJS project imported into Eclipse
-- [ ] (Optional) Sencha Architect opened — explore visual layout vs code approach
+- [ ] Add Metricbeat container to `docker-compose.yml`
+- [ ] Enable modules: `system` (CPU, memory, disk), `docker` (container stats)
+- [ ] Confirm metrics appearing in `metricbeat-*` index
+- [ ] Add panels to existing dashboard:
+  - Container CPU usage over time
+  - Memory usage trend
+  - Disk I/O
 
-**Output:** A live URL you can share. Eclipse familiarity if you got there.
-
-See: `TIER-4-DEPLOY-ECLIPSE.md`
+Metricbeat ships directly to ES (no Logstash needed — data is already structured).
 
 ---
 
-## Tier 5 — Stretch goals (if time remains)
+### Tier 7 — Heartbeat (uptime monitoring)
 
-These are lower priority but good exposure before the production project.
+**Goal:** Monitor Cloud Run API and Supabase availability.
+Estimated time: 1–2 days.
 
-- [ ] Add TypeScript to the Node.js API (gradual, not a rewrite)
-- [ ] Add one Kibana dashboard for POI data (category breakdown, map heatmap)
-- [ ] Add Filebeat to ship API logs into Elasticsearch
-- [ ] Explore ES|QL queries against your POI index in Kibana Dev Tools
-- [ ] Add a simple keyword + geo distance hybrid search endpoint
+- [ ] Add Heartbeat container to `docker-compose.yml`
+- [ ] Configure monitors:
+  - HTTP monitor: `https://your-cloud-run-url/health` every 30s
+  - HTTP monitor: `https://your-supabase-url/rest/v1/pois?limit=1` every 60s
+- [ ] Confirm monitors appearing in Kibana Uptime app
+- [ ] Set up a simple alert rule: notify (log to ES) if endpoint down for 2 consecutive checks
+
+---
+
+### Tier 8 — Winlogbeat (Windows event logs)
+
+**Goal:** Understand Windows-specific log shipping, relevant to production on-prem servers.
+Estimated time: 2–3 days.
+
+Note: Winlogbeat runs on the host Windows machine, not in Docker.
+This tier is more about understanding the production workflow than
+building something new for the toy project.
+
+- [ ] Install Winlogbeat on Windows host
+- [ ] Configure to ship to local Logstash (port 5044)
+- [ ] Enable channels: Application, System, Security
+- [ ] Create Logstash pipeline variant for Windows events
+- [ ] Confirm Windows events appearing in `winlogbeat-*` index in Kibana
+- [ ] Add a Kibana panel: login events over time (EventID 4624)
+
+---
+
+### Tier 9 — Auditbeat and Packetbeat (stretch)
+
+**Goal:** Exposure to security and network monitoring beats.
+Estimated time: 3–4 days combined. Lower priority — do this if time permits before the production project starts.
+
+**Auditbeat:**
+
+- [ ] Run on host, monitor file integrity of `apps/api/src/`
+- [ ] Track process starts/stops
+- [ ] Confirm audit events in Kibana
+
+**Packetbeat:**
+
+- [ ] Monitor network traffic between API container and ES/Supabase
+- [ ] Visualise HTTP transaction latency breakdown in Kibana
+- [ ] Useful for understanding what the production network traffic looks like
+
+---
+
+## Suggested order within a week
+
+If you have one week before the production project starts, prioritise:
+
+| Day | Focus |
+| --- | ----- |
+| 1 | Tier 5.1 — structured logging in API |
+| 2 | Tier 5.2 — Logstash pipeline |
+| 3 | Tier 5.3 — Filebeat wired up |
+| 4 | Tier 5.4 — Kibana dashboard |
+| 5 | Tier 6 — Metricbeat (quick win, infra already in place) |
+| 6 | Tier 7 — Heartbeat (uptime monitors for Cloud Run + Supabase) |
+| 7 | Tier 8 — Winlogbeat (production-relevant Windows log shipping) |
+
+Tiers 9 is stretch — come back to it after you've been on the production project for a few weeks and have real context for what Auditbeat and Packetbeat are used for there.
 
 ---
 
 ## File layout (full project)
 
-```
+```text
 sg-map-toy/
 ├── docs/
 │   ├── ROADMAP.md              ← this file

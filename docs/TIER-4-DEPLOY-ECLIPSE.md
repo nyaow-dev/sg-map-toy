@@ -31,20 +31,30 @@ CMD ["node", "src/index.js"]
 # Authenticate
 gcloud auth login
 
+
+# Create a project (skip this if using existing)
+gcloud projects create YOUR_PROJECT_ID --name="SG Map Toy" --organization=YOUR_ORGANIZATION_ID
+gcloud billing projects link YOUR_PROJECT_ID --billing-account=YOUR_BILLING_ACCOUNT_ID
+
 # Set your project
 gcloud config set project YOUR_PROJECT_ID
 
 # Build and deploy in one step
 gcloud run deploy sg-map-api \
   --source apps/api \
-  --region asia-southeast1 \
+  --region us-west1 \
   --allow-unauthenticated \
   --set-env-vars "ES_URL=YOUR_ES_URL,SUPABASE_URL=...,SUPABASE_SERVICE_KEY=..."
 ```
 
+Alternatively: [Set Up Continuous Deployment to Cloud Run Using GitHub Actions](https://oneuptime.com/blog/post/2026-02-17-how-to-set-up-continuous-deployment-to-cloud-run-using-github-actions-and-workload-identity-federation/view#:~:text=On%20this%20page,manage,%20no%20secrets%20to%20rotate.)
+
+- Workflow action file: [.github/workflows/deploy-api.yaml](../.github/workflows/deploy-api.yaml)
+
 > Note: For Elasticsearch, Cloud Run cannot reach your local Docker instance.
 > Options:
-> - Use Elastic Cloud free trial (14 days): https://cloud.elastic.co
+>
+> - Use Elastic Cloud free trial (14 days): <https://cloud.elastic.co>
 > - Or keep the API local for now and only deploy the front-end
 
 ### 3. Update ExtJS app to point to Cloud Run URL
